@@ -1,6 +1,7 @@
 #include <conio.h>
 #include <stdio.h>
 #include <locale.h>
+#include <math.h>
 #include <stdlib.h>
 
 #define MAX 100
@@ -23,6 +24,7 @@ void output(Notebook *); // функция вывода списка имеющихся записей
 int selectmenu(); // функция дополнительного меню
 int structСycle(Notebook *); // функция цикла для массива структур
 void clearmas(Notebook *);
+int selectMenuOut();
 
 
 int main()
@@ -64,7 +66,19 @@ int main()
 			break;
 		case 3: del(notebook);
 			break;
-		case 4: output(notebook);
+		case 4:
+		{
+			choiseSelectMenu = selectMenuOut();
+			switch (choiseSelectMenu)
+			{
+			case 1: output(notebook);
+				break;
+			case 2: output(notebook);
+				break;
+			default: printf("Ошибка! Такого пункта меню нет!\n");
+				break;
+			}
+		}
 			break;
 		case 5: exit(0);
 		default: printf("Ошибка! Такого пункта меню нет!\n");
@@ -99,6 +113,20 @@ int selectmenu()
 	printf("1. Добавить новый ноутбук\n");
 	printf("2. Вернуться в меню\n");
 	printf("3. Выйти из программы\n");
+
+	fflush(stdin);
+	printf("\nВведите номер нужного пункта меню: ");
+	scanf_s("%d", &n);
+
+	return n;
+}
+
+int selectMenuOut()
+{
+	int n;
+
+	printf("1. Сохранить все данные в файл\n");
+	printf("2. Вывести все данные на экран\n");
 
 	fflush(stdin);
 	printf("\nВведите номер нужного пункта меню: ");
@@ -190,25 +218,27 @@ void output(Notebook *notebook)
 	int i = 1;
 	int t;
 
-	printf("----------------------------------------------------------------------\n");
-	printf("|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
-	printf("----------------------------------------------------------------------\n");
+	FILE *f;
 
-	for (t = 0; t < MAX; t++)
-	{
-		if ((notebook + t)->visible == 1)
+	if (selectMenuOut() == 1)
+	{	
+		fopen_s(&f, "Список ноутбуков.txt", "w");
+
+		fprintf(f, "----------------------------------------------------------------------\n");
+		fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+		fprintf(f, "----------------------------------------------------------------------\n");
+
+		for (t = 0; t < MAX; t++)
 		{
-			printf("| %3d ", i);
-			i++;
-			printf("|%17s    ", notebook[t].name);
-
-			printf("| %7d |", notebook[t].CPU);
-			printf(" %7d |", notebook[t].RAM);
-			printf(" %7d |", notebook[t].HDD);
-			printf(" %8d |\n", notebook[t].price);
+			if ((notebook + t)->visible == 1)
+			{
+				fprintf(f, "%17s;%7d;%7d;%7d;%8d \n", notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
+			}
 		}
 	}
-	printf("----------------------------------------------------------------------\n");
+	else
+		if (selectMenuOut() == 2)
+			f = stdout;
 }
 
 int structСycle(Notebook *notebook)
