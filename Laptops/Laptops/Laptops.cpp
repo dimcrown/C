@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define MAX 100
+#define MAX 10
 
 struct Notebook
 {
@@ -20,7 +20,9 @@ int menu(); // функция меню
 void add(Notebook *); // функция добавления ноутбука
 void del(Notebook *); // функция удаления записи
 void edit(Notebook *); // функция редактирования записи
-void output(Notebook *); // функция вывода списка имеющихся записей
+void outputfile(Notebook *); // функция вывода данных в текстовый файл
+void outputview(Notebook *); // функция вывода данных на экран
+void outputfileb(Notebook *); // функция вывода данных в бинарный файл
 int selectmenu(); // функция дополнительного меню
 int structСycle(Notebook *); // функция цикла для массива структур
 void clearmas(Notebook *);
@@ -71,9 +73,11 @@ int main()
 			choiseSelectMenu = selectMenuOut();
 			switch (choiseSelectMenu)
 			{
-			case 1: output(notebook);
+			case 1: outputfile(notebook);
 				break;
-			case 2: output(notebook);
+			case 2: outputview(notebook);
+				break;
+			case 3: outputfileb(notebook);
 				break;
 			default: printf("Ошибка! Такого пункта меню нет!\n");
 				break;
@@ -127,6 +131,7 @@ int selectMenuOut()
 
 	printf("1. Сохранить все данные в файл\n");
 	printf("2. Вывести все данные на экран\n");
+	printf("3. Вывести все данные в бинарный файл\n");
 
 	fflush(stdin);
 	printf("\nВведите номер нужного пункта меню: ");
@@ -213,32 +218,106 @@ void del(Notebook *notebook)
 
 }
 
-void output(Notebook *notebook)
+void outputfile(Notebook *notebook)
 {
 	int i = 1;
 	int t;
 
 	FILE *f;
 
-	if (selectMenuOut() == 1)
-	{	
-		fopen_s(&f, "Список ноутбуков.txt", "w");
+	fopen_s(&f, "Список ноутбуков.txt", "w");
 
-		fprintf(f, "----------------------------------------------------------------------\n");
-		fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
-		fprintf(f, "----------------------------------------------------------------------\n");
-
-		for (t = 0; t < MAX; t++)
+	fprintf(f, "----------------------------------------------------------------------\n");
+	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+	fprintf(f, "----------------------------------------------------------------------\n");
+	
+	for (t = 0; t < MAX; t++)
+	{
+		if ((notebook + t)->visible == 1)
 		{
-			if ((notebook + t)->visible == 1)
-			{
-				fprintf(f, "%17s;%7d;%7d;%7d;%8d \n", notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
-			}
+			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
+		}
+		i++;
+	}
+
+	fprintf(f, "----------------------------------------------------------------------\n");
+
+	fclose(f);
+}
+
+void outputview(Notebook *notebook)
+{
+	int i = 1;
+	int t;
+
+	FILE *f;
+
+	f = stdout;
+
+	fprintf(f, "----------------------------------------------------------------------\n");
+	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+	fprintf(f, "----------------------------------------------------------------------\n");
+
+	for (t = 0; t < MAX; t++)
+	{
+		if ((notebook + t)->visible == 1)
+		{
+			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
 		}
 	}
-	else
-		if (selectMenuOut() == 2)
-			f = stdout;
+
+	fprintf(f, "----------------------------------------------------------------------\n");
+}
+
+void outputfileb(Notebook *notebook)
+{
+	int i = 1;
+	int t;
+
+	FILE *f;
+
+	fopen_s(&f, "Список ноутбуков.bd", "wb");
+
+	for (t = 0; t < MAX; t++)
+	{
+		if ((notebook + t)->visible == 1)
+		{
+			fwrite(&notebook[t], sizeof(Notebook), 1, f);
+		}
+	}
+
+	fclose(f);
+
+	//// ОПЕРАЦИЯ ЧТЕНИЯ
+	//Notebook readmas[20];
+
+	//fopen_s(&f, "Список ноутбуков.bd", "rb");
+	//int count;
+	//int N = 0;
+
+	//do
+	//{
+	//	count = fread(&readmas[N], sizeof(notebook), 1, f);
+	//	N++;
+	//} while (count == 1);
+	//N--;	
+
+	//fclose(f);
+
+	//fprintf(f, "----------------------------------------------------------------------\n");
+	//fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+	//fprintf(f, "----------------------------------------------------------------------\n");
+
+	//for (t = 0; t < MAX; t++)
+	//{
+	//	if ((notebook + t)->visible == 1)
+	//	{
+	//		fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
+	//	}
+	//	i++;
+	//}
+
+	//fprintf(f, "----------------------------------------------------------------------\n");
 }
 
 int structСycle(Notebook *notebook)
