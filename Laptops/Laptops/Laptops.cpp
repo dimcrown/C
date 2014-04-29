@@ -17,21 +17,23 @@ struct Notebook
 };
 
 int menu(); // функция меню
-void add(Notebook *); // функция добавления ноутбука
-void del(Notebook *); // функция удаления записи
+void add(Notebook *); // функция добавления записи
 void edit(Notebook *); // функция редактирования записи
+void del(Notebook *); // функция удаления записи
 void outputfile(Notebook *); // функция вывода данных в текстовый файл
-void outputview(Notebook *); // функция вывода данных на экран
+void outputview(Notebook *); // функция вывода текстовых данных на экран
 void outputfileb(Notebook *); // функция вывода данных в бинарный файл
-int selectmenu(); // функция дополнительного меню
+void outputviewb(Notebook *); // функция вывода на экран информации из бинарного файла
+int selectmenuAdd(); // функция дополнительного меню при добавлении ноутбука
+int selectMenuOut(); // функция дополнительного меню при выводе информации в файл или на экран
 int structСycle(Notebook *); // функция цикла для массива структур
-void clearmas(Notebook *);
-int selectMenuOut();
+void clearmas(Notebook *); // функция превращения всех элементов массива в 0 для возможности сравнения
 
 
 int main()
 {
 	Notebook notebook[MAX];
+	Notebook readmas[MAX];
 
 	clearmas(notebook);
 
@@ -47,17 +49,16 @@ int main()
 		{
 		case 1:
 		{
-				  add(notebook);//
+				  add(notebook);
 				  do // do while так как переменная choiseSelectMenu ни чему не равна 
 				  {
-					  choiseSelectMenu = selectmenu();
+					  choiseSelectMenu = selectmenuAdd();
 					  switch (choiseSelectMenu)
 					  {
 					  case 1: add(notebook);
 						  break;
 					  case 2: choiseMenu; // переменной choiseMenu присваевается значение какого-то пункта меню
 						  break;
-					  case 3: exit(0);
 					  default: printf("Ошибка! Такого пункта меню нет!\n");
 						  break;
 					  }
@@ -78,6 +79,8 @@ int main()
 			case 2: outputview(notebook);
 				break;
 			case 3: outputfileb(notebook);
+				break;
+			case 4: outputviewb(readmas);
 				break;
 			default: printf("Ошибка! Такого пункта меню нет!\n");
 				break;
@@ -110,13 +113,12 @@ int menu()
 	return n;
 }
 
-int selectmenu()
+int selectmenuAdd()
 {
 	int n;
 
 	printf("1. Добавить новый ноутбук\n");
 	printf("2. Вернуться в меню\n");
-	printf("3. Выйти из программы\n");
 
 	fflush(stdin);
 	printf("\nВведите номер нужного пункта меню: ");
@@ -131,7 +133,8 @@ int selectMenuOut()
 
 	printf("1. Сохранить все данные в файл\n");
 	printf("2. Вывести все данные на экран\n");
-	printf("3. Вывести все данные в бинарный файл\n");
+	printf("3. Сохранить все данные в бинарный файл\n");
+	printf("4. Вывести все данные из бинарного файла на экран\n");
 
 	fflush(stdin);
 	printf("\nВведите номер нужного пункта меню: ");
@@ -287,37 +290,44 @@ void outputfileb(Notebook *notebook)
 	}
 
 	fclose(f);
+}
 
-	//// ОПЕРАЦИЯ ЧТЕНИЯ
-	//Notebook readmas[20];
+void outputviewb(Notebook *readmas)
+{
+	int i = 1;
+	int t;
 
-	//fopen_s(&f, "Список ноутбуков.bd", "rb");
-	//int count;
-	//int N = 0;
+	FILE *f;
 
-	//do
-	//{
-	//	count = fread(&readmas[N], sizeof(notebook), 1, f);
-	//	N++;
-	//} while (count == 1);
-	//N--;	
+	fopen_s(&f, "Список ноутбуков.bd", "rb");
+	int count;
+	int N = 0;
 
-	//fclose(f);
+	do
+	{
+		count = fread(&readmas[N], sizeof(Notebook), 1, f);
+		N++;
+	} while (count == 1);
+	N--;
 
-	//fprintf(f, "----------------------------------------------------------------------\n");
-	//fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
-	//fprintf(f, "----------------------------------------------------------------------\n");
+	fclose(f);
 
-	//for (t = 0; t < MAX; t++)
-	//{
-	//	if ((notebook + t)->visible == 1)
-	//	{
-	//		fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
-	//	}
-	//	i++;
-	//}
+	f = stdout;
 
-	//fprintf(f, "----------------------------------------------------------------------\n");
+	fprintf(f, "----------------------------------------------------------------------\n");
+	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+	fprintf(f, "----------------------------------------------------------------------\n");
+
+	for (t = 0; t < MAX; t++)
+	{
+		if ((readmas + t)->visible == 1)
+		{
+			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
+		}
+		i++;
+	}
+
+	fprintf(f, "----------------------------------------------------------------------\n");
 }
 
 int structСycle(Notebook *notebook)
