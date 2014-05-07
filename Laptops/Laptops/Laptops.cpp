@@ -14,6 +14,8 @@ struct Notebook
 	int HDD;
 	int price;
 	int visible; // 0 - ячейка свободна, 1 - ячейка занята
+	//Notebook *prev; // указатель на предыдущий ноутбук
+	//Notebook *next; // указатель на следующий ноутбук
 };
 
 int menu(); // функция меню
@@ -28,6 +30,8 @@ int selectmenuAdd(); // функция дополнительного меню при добавлении ноутбука
 int selectMenuOut(); // функция дополнительного меню при выводе информации в файл или на экран
 int structСycle(Notebook *); // функция цикла для массива структур
 void clearmas(Notebook *); // функция превращения всех элементов массива в 0 для возможности сравнения
+int selectmenuOutInfo();
+void outputscreen(Notebook *); // test
 
 
 int main()
@@ -41,6 +45,7 @@ int main()
 
 	char choiseMenu;
 	char choiseSelectMenu;
+	char choiseSelectFile;
 
 	while (exit != 0)
 	{
@@ -71,23 +76,42 @@ int main()
 			break;
 		case 4:
 		{
-			choiseSelectMenu = selectMenuOut();
-			switch (choiseSelectMenu)
-			{
-			case 1: outputfile(notebook);
-				break;
-			case 2: outputview(notebook);
-				break;
-			case 3: outputfileb(notebook);
-				break;
-			case 4: outputviewb(readmas);
-				break;
-			default: printf("Ошибка! Такого пункта меню нет!\n");
-				break;
-			}
+				  do
+				  {
+					  choiseSelectFile = selectmenuOutInfo();
+					  switch (choiseSelectFile)
+					  {
+					  case 1: outputscreen(readmas);
+						  break;
+					  case 2: outputfile(notebook);
+						  break;
+					  case 3: choiseMenu;
+						  break;
+					  default: printf("Ошибка! Такого пункта меню нет!\n");
+						  break;
+					  }
+				  } while (choiseSelectFile != 3);
 		}
 			break;
-		case 5: exit(0);
+		case 5:
+		{
+				  choiseSelectMenu = selectMenuOut();
+				  switch (choiseSelectMenu)
+				  {
+				  case 1: outputfile(notebook);
+					  break;
+				  case 2: outputview(readmas);
+					  break;
+				  case 3: outputfileb(notebook);
+					  break;
+				  case 4: outputviewb(readmas);
+					  break;
+				  default: printf("Ошибка! Такого пункта меню нет!\n");
+					  break;
+				  }
+		}
+			break;
+		case 6: exit(0);
 		default: printf("Ошибка! Такого пункта меню нет!\n");
 			break;
 		}
@@ -104,7 +128,8 @@ int menu()
 	printf("2. Редактировать данные о ноутбуке\n");
 	printf("3. Удалить ноутбук\n");
 	printf("4. Вывести все данные о ноутбуке\n");
-	printf("5. Выйти из программы\n");
+	printf("5. Работа с файлом\n");
+	printf("6. Выйти из программы\n");
 
 	fflush(stdin);
 	printf("\nВведите номер нужного пункта меню: ");
@@ -127,14 +152,29 @@ int selectmenuAdd()
 	return n;
 }
 
+int selectmenuOutInfo()
+{
+	int n;
+
+	printf("1. Вывести на экран\n");
+	printf("2. Вывести в файл\n");
+	printf("3. Вернуться в главное меню\n");
+
+	fflush(stdin);
+	printf("\nВведите номер нужного пункта меню: ");
+	scanf_s("%d", &n);
+
+	return n;
+}
+
 int selectMenuOut()
 {
 	int n;
 
-	printf("1. Сохранить все данные в файл\n");
-	printf("2. Вывести все данные на экран\n");
+	printf("1. Сохранить все данные в текстовый файл\n");
+	printf("2. Загрузить все данные из текстового файла\n");
 	printf("3. Сохранить все данные в бинарный файл\n");
-	printf("4. Вывести все данные из бинарного файла на экран\n");
+	printf("4. Загрузить все данные из бинарного файла\n");
 
 	fflush(stdin);
 	printf("\nВведите номер нужного пункта меню: ");
@@ -221,7 +261,7 @@ void del(Notebook *notebook)
 
 }
 
-void outputfile(Notebook *notebook)
+void outputfile(Notebook *notebook) // Сохранить все данные в текстовый файл
 {
 	int i = 1;
 	int t;
@@ -230,49 +270,40 @@ void outputfile(Notebook *notebook)
 
 	fopen_s(&f, "Список ноутбуков.txt", "w");
 
-	fprintf(f, "----------------------------------------------------------------------\n");
-	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
-	fprintf(f, "----------------------------------------------------------------------\n");
-	
 	for (t = 0; t < MAX; t++)
 	{
 		if ((notebook + t)->visible == 1)
 		{
-			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
+			fprintf(f, "%d;%s;%d;%d;%d;%d \n", i, notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
 		}
 		i++;
 	}
 
-	fprintf(f, "----------------------------------------------------------------------\n");
-
 	fclose(f);
 }
 
-void outputview(Notebook *notebook)
+void outputview(Notebook *readmas) // Загрузить все данные из текстового файла
 {
 	int i = 1;
 	int t;
 
 	FILE *f;
 
-	f = stdout;
-
-	fprintf(f, "----------------------------------------------------------------------\n");
-	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
-	fprintf(f, "----------------------------------------------------------------------\n");
+	fopen_s(&f, "Список ноутбуков.txt", "r");
 
 	for (t = 0; t < MAX; t++)
 	{
-		if ((notebook + t)->visible == 1)
+		if ((readmas + t)->visible == 1)
 		{
-			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, notebook[t].name, notebook[t].CPU, notebook[t].RAM, notebook[t].HDD, notebook[t].price);
+			fscanf_s(f, "%d;%s;%d;%d;%d;%d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
 		}
+		i++;
 	}
 
-	fprintf(f, "----------------------------------------------------------------------\n");
+	fclose(f);
 }
 
-void outputfileb(Notebook *notebook)
+void outputfileb(Notebook *notebook) // Сохранить все данные в бинарный файл
 {
 	int i = 1;
 	int t;
@@ -292,7 +323,7 @@ void outputfileb(Notebook *notebook)
 	fclose(f);
 }
 
-void outputviewb(Notebook *readmas)
+void outputviewb(Notebook *readmas) // Загрузить все данные из бинарного файла
 {
 	int i = 1;
 	int t;
@@ -310,24 +341,16 @@ void outputviewb(Notebook *readmas)
 	} while (count == 1);
 	N--;
 
+	//for (t = 0; t < MAX; t++)
+	//{
+	//	if ((readmas + t)->visible == 1)
+	//	{
+	//		fprintf(f, "%d;%s;%d;%d;%d;%d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
+	//	}
+	//	i++;
+	//}
+
 	fclose(f);
-
-	f = stdout;
-
-	fprintf(f, "----------------------------------------------------------------------\n");
-	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
-	fprintf(f, "----------------------------------------------------------------------\n");
-
-	for (t = 0; t < MAX; t++)
-	{
-		if ((readmas + t)->visible == 1)
-		{
-			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
-		}
-		i++;
-	}
-
-	fprintf(f, "----------------------------------------------------------------------\n");
 }
 
 int structСycle(Notebook *notebook)
@@ -349,4 +372,63 @@ void clearmas(Notebook *notebook)
 	{
 		(notebook + t)->visible = 0;  // если ячейка пустая
 	}
+}
+
+//void outputfile(Notebook *readmas)
+//{
+//	int i = 1;
+//	int t;
+//
+//	FILE *f;
+//
+//	fopen_s(&f, "Список ноутбуков.txt", "w");
+//
+//	fprintf(f, "----------------------------------------------------------------------\n");
+//	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+//	fprintf(f, "----------------------------------------------------------------------\n");
+//
+//	for (t = 0; t < MAX; t++)
+//	{
+//		if ((readmas + t)->visible == 1)
+//		{
+//			fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d \n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
+//		}
+//		i++;
+//	}
+//
+//	fprintf(f, "----------------------------------------------------------------------\n");
+//
+//	fclose(f);
+//}
+
+void outputscreen(Notebook *readmas)
+{
+	int i = 1;
+	int t;
+
+	FILE *f;
+
+	f = stdout;
+
+	fprintf(f, "----------------------------------------------------------------------\n");
+	fprintf(f, "|  №  |       Название      |   CPU   |   RAM   |   HDD   |   цена   |\n");
+	fprintf(f, "----------------------------------------------------------------------\n");
+
+	//if (outputview)
+	//{
+		for (t = 0; t < MAX; t++)
+		{
+			if ((readmas + t)->visible == 1)
+			{
+				fprintf(f, "%d;%17s;%7d;%7d;%7d;%8d\n", i, readmas[t].name, readmas[t].CPU, readmas[t].RAM, readmas[t].HDD, readmas[t].price);
+			}
+		}
+	//} 
+	//else
+	//	if (outputviewb)
+	//	{
+
+	//	}
+
+	fprintf(f, "----------------------------------------------------------------------\n");
 }
